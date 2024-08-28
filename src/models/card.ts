@@ -4,6 +4,8 @@ export interface PokemonCard {
     type: string;
     hp: number;
     attack: number;
-    weakness: string;
-    resistance: string;
+    weaknessType: string;
+    weaknessValue: number;
+    resistanceType: string;
+    resistanceValue: number;
 }

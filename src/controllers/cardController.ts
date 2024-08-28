@@ -37,7 +37,6 @@ export const getCard = (req: Request, res: Response) => {
 
 // Retrieve all cards
 export const getAllCards = (_: Request, res: Response) => {
-    //TODO: Get cards from DB PostgreSQL
     res.json(cards);
 };
 
@@ -62,17 +61,17 @@ export const battleCards = (req: Request, res: Response) => {
     let card1Damage = card1.attack;
     let card2Damage = card2.attack;
 
-    if (card1.type === card2.weakness) {
-        card1Damage *= 2;
+    if (card1.type === card2.weaknessType) {
+        card1Damage *= card2.weaknessValue;
     }
-    if (card2.type === card1.weakness) {
-        card2Damage *= 2;
+    if (card2.type === card1.weaknessType) {
+        card2Damage *= card1.weaknessValue;
     }
-    if (card1.type === card2.resistance) {
-        card1Damage -= 20;
+    if (card1.type === card2.resistanceType) {
+        card1Damage -= card2.resistanceValue;
     }
-    if (card2.type === card1.resistance) {
-        card2Damage -= 20;
+    if (card2.type === card1.resistanceType) {
+        card2Damage -= card1.resistanceValue;
     }
 
     const result = card1Damage > card2Damage ? `${card1.name} wins!` : `${card2.name} wins!`;
@@ -86,7 +85,7 @@ export const identifyWeaknessesAndResistances = (req: Request, res: Response) =>
     if (!card) {
         return res.status(404).json({ message: 'Card not found' });
     }
-    const weaknesses = cards.filter(c => c.type === card.weakness);
-    const resistances = cards.filter(c => c.type === card.resistance);
+    const weaknesses = cards.filter(c => c.type === card.weaknessType);
+    const resistances = cards.filter(c => c.type === card.resistanceType);
     res.json({ weaknesses, resistances });
 };
