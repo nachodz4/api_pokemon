@@ -20,13 +20,13 @@ export const createCard = async (req: Request, res: Response) => {
 // Update an existing card
 export const updateCard = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { name, type, hp, attack, weakness, resistance } = req.body;
+    const { name, type, hp, attack, weakness, resistance, rarity, expansion } = req.body;
     try {
         const result = await pool.query(
             `UPDATE pokemon_cards SET name = $1, type = $2, hp = $3, attack = $4, weakness = $5, resistance = $6
-                ,weakness_value = $7, resistance_value = $8
-             WHERE id = $9 RETURNING *`,
-            [name, type, hp, attack, weakness.type, resistance.type, weakness.value, resistance.value, id]
+                ,weakness_value = $7, resistance_value = $8, rarity = $9, rarity_value = $10, expansion = $11
+             WHERE id = $12 RETURNING *`,
+            [name, type, hp, attack, weakness.type, resistance.type, weakness.value, resistance.value, rarity.type, rarity.value, expansion, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Card not found' });

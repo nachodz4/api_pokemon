@@ -1,18 +1,12 @@
-import express, { Request, Response } from 'express';
-import bodyParser  from 'body-parser';
+import express from 'express';
+import cors from 'cors';
 import cardRoutes from './routes/card';
-
 
 const app = express();
 const port = 3000;
 
+app.use(cors());
 app.use(express.json());
-app.use(bodyParser.json())
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  })
-)
 
 app.use('/api', cardRoutes);
 
