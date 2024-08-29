@@ -1,16 +1,15 @@
-// import { PokemonCard } from '../models/card';
 import { Request, Response } from 'express';
 import pool from '../db';
 
 
 // Create a new card
 export const createCard = async (req: Request, res: Response) => {
-    const { name, type, hp, attack, weakness, resistance } = req.body;
+    const { name, type, hp, attack, weakness, resistance, rarity, expansion } = req.body;
     try {
         const result = await pool.query(
-            `INSERT INTO pokemon_cards (name, type, hp, attack, weakness, resistance, weakness_value, resistance_value)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-            [name, type, hp, attack, weakness.type, resistance.type, weakness.value, resistance.value]
+            `INSERT INTO pokemon_cards (name, type, hp, attack, weakness, resistance, rarity, rarity_value, weakness_value, resistance_value, expansion)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+            [name, type, hp, attack, weakness.type, resistance.type, rarity.type, rarity.value, weakness.value, resistance.value, expansion]
         );
         res.status(201).json(result.rows[0]);
     } catch (error) {

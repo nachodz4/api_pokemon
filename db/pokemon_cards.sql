@@ -6,6 +6,9 @@ CREATE TABLE pokemon_cards (
     attack INTEGER NOT NULL,
     weakness VARCHAR(50) NOT NULL,
     resistance VARCHAR(50) NOT NULL,
+    rarity VARCHAR(50) NOT NULL,
+    rarity_value VARCHAR(50) NOT NULL,
     weakness_value INTEGER,
-    resistance_value INTEGER
+    resistance_value INTEGER,
+    expansion VARCHAR(255) NOT NULL
 );
