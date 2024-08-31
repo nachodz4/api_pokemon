@@ -1,134 +1,129 @@
-import { Request, Response } from 'express';
-import pool from '../db';
-
+import { Request, Response } from "express";
+import PokemonService from "../services/cardService";
 
 // Create a new card
 export const createCard = async (req: Request, res: Response) => {
-    const { name, type, hp, attack, weakness, resistance, rarity, expansion } = req.body;
-    try {
-        const result = await pool.query(
-            `INSERT INTO pokemon_cards (name, type, hp, attack, weakness, resistance, rarity, rarity_value, weakness_value, resistance_value, expansion)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-            [name, type, hp, attack, weakness.type, resistance.type, rarity.type, rarity.value, weakness.value, resistance.value, expansion]
-        );
-        res.status(201).json(result.rows[0]);
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating card', error });
-    }
+  try {
+    const newCard = await PokemonService.createCard(req.body);
+
+    res.status(201).json(newCard);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating card", error });
+  }
 };
 
 // Update an existing card
 export const updateCard = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { name, type, hp, attack, weakness, resistance, rarity, expansion } = req.body;
-    try {
-        const result = await pool.query(
-            `UPDATE pokemon_cards SET name = $1, type = $2, hp = $3, attack = $4, weakness = $5, resistance = $6
-                ,weakness_value = $7, resistance_value = $8, rarity = $9, rarity_value = $10, expansion = $11
-             WHERE id = $12 RETURNING *`,
-            [name, type, hp, attack, weakness.type, resistance.type, weakness.value, resistance.value, rarity.type, rarity.value, expansion, id]
-        );
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'Card not found' });
-        }
-        res.json(result.rows[0]);
-    } catch (error) {
-        res.status(500).json({ message: 'Error updating card', error });
+  const { id } = req.params;
+  try {
+    const result = await PokemonService.updateCard(parseInt(id, 10), req.body);
+    if (!result) {
+      return res.status(404).json({ message: "Card not found" });
     }
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating card", error });
+  }
 };
 
 // Retrieve a specific card
 export const getCard = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('SELECT * FROM pokemon_cards WHERE id = $1', [id]);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'Card not found' });
-        }
-        res.json(result.rows[0]);
-    } catch (error) {
-        res.status(500).json({ message: 'Error retrieving card', error });
+  const { id } = req.params;
+  try {
+    const result = await PokemonService.getCardById(parseInt(id, 10));
+    if (!result) {
+      return res.status(404).json({ message: "Card not found" });
     }
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving card", error });
+  }
 };
 
 // Retrieve all cards
 export const getAllCards = async (_: Request, res: Response) => {
-    try {
-        const result = await pool.query('SELECT * FROM pokemon_cards');
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ message: 'Error retrieving cards', error });
-    }
+  try {
+    const result = await PokemonService.getAllCards();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving cards", error });
+  }
 };
 
 // Delete a card
 export const deleteCard = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('DELETE FROM pokemon_cards WHERE id = $1 RETURNING *', [id]);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'Card not found' });
-        }
-        res.status(204).send();
-    } catch (error) {
-        res.status(500).json({ message: 'Error deleting card', error });
+  const { id } = req.params;
+  try {
+    const result = await PokemonService.deteleCard(parseInt(id, 10));
+    if (!result) {
+      return res.status(404).json({ message: "Card not found" });
     }
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting card", error });
+  }
 };
 
 // Card Battle Simulation
 export const battleCards = async (req: Request, res: Response) => {
-    const { card1Id, card2Id } = req.body;
-    const queryCard = 'SELECT * FROM pokemon_cards WHERE id = $1';
-    try {
-        const card1Result = await pool.query(queryCard, [card1Id]);
-        const card2Result = await pool.query(queryCard, [card2Id]);
+  const { card1Id, card2Id } = req.body;
+  try {
+    const card1Result = await PokemonService.getCardById(card1Id);
+    const card2Result = await PokemonService.getCardById(card2Id);
 
-        if (card1Result.rows.length === 0 || card2Result.rows.length === 0) {
-            return res.status(404).json({ message: 'One or both cards not found' });
-        }
+    if (card1Result && card2Result) {
+      const card1 = card1Result;
+      const card2 = card2Result;
 
-        const card1 = card1Result.rows[0];
-        const card2 = card2Result.rows[0];
+      let card1Damage = card1.attack;
+      let card2Damage = card2.attack;
 
-        let card1Damage = card1.attack;
-        let card2Damage = card2.attack;
+      if (card1.type === card2.weakness) {
+        card1Damage *= card2.weakness_value || 1;
+      }
+      if (card2.type === card1.weakness) {
+        card2Damage *= card1.weakness_value || 1;
+      }
+      if (card1.type === card2.resistance) {
+        card1Damage -= card2.resistance_value || 0;
+      }
+      if (card2.type === card1.resistance) {
+        card2Damage -= card1.resistance_value || 1;
+      }
 
-        if (card1.type === card2.weakness) {
-            card1Damage *= card2.weakness_value;
-        }
-        if (card2.type === card1.weakness) {
-            card2Damage *= card1.weakness_value;
-        }
-        if (card1.type === card2.resistance) {
-            card1Damage -= card2.resistance_value;
-        }
-        if (card2.type === card1.resistanceType) {
-            card2Damage -= card1.resistance_value;
-        }
-
-        const result = card1Damage > card2Damage ? `${card1.name} wins!` : `${card2.name} wins!`;
-        res.json({ result, card1Damage, card2Damage });
-    } catch (error) {
-        res.status(500).json({ message: 'Error during battle simulation', error });
+      const result =
+        card1Damage > card2Damage
+          ? `${card1.name} wins!`
+          : `${card2.name} wins!`;
+      return res.json({ result, card1Damage, card2Damage });
     }
+
+    return res.status(404).json({ message: "One or both cards not found" });
+  } catch (error) {
+    res.status(500).json({ message: "Error during battle simulation", error });
+  }
 };
 
 // Identify Card Weaknesses and Resistances
-export const identifyWeaknessesAndResistances = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    try {
-        const cardResult = await pool.query('SELECT * FROM pokemon_cards WHERE id = $1', [id]);
-        if (cardResult.rows.length === 0) {
-            return res.status(404).json({ message: 'Card not found' });
-        }
-
-        const card = cardResult.rows[0];
-        const queryType = 'SELECT * FROM pokemon_cards WHERE type = $1';
-        const weaknesses = await pool.query(queryType, [card.weakness]);
-        const resistances = await pool.query(queryType, [card.resistance]);
-
-        res.json({ weaknesses: weaknesses.rows, resistances: resistances.rows });
-    } catch (error) {
-        res.status(500).json({ message: 'Error identifying weaknesses and resistances', error });
+export const identifyWeaknessesAndResistances = async (
+  req: Request,
+  res: Response
+) => {
+  const { id } = req.params;
+  try {
+    const cardResult = await PokemonService.getCardById(parseInt(id, 10));
+    if (!cardResult) {
+      return res.status(404).json({ message: "Card not found" });
     }
+
+    const card = cardResult;
+    const weaknesses = await PokemonService.getCardByType(card.weakness);
+    const resistances = await PokemonService.getCardByType(card.resistance);
+
+    res.json({ weaknesses: weaknesses, resistances: resistances });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error identifying weaknesses and resistances", error });
+  }
 };

@@ -72,19 +72,13 @@ A RESTful API for managing Pokemon cards, including battle simulations.
     "type": "Ground",
     "hp": 120,
     "attack": 60,
-    "weakness": {
-      "type": "Fire",
-      "value": 2
-    },
-    "resistance": {
-      "type": "Normal",
-      "value": 0
-    },
-    "rarity": {
-      "type": "Common",
-      "value": "130/160"
-    },
-    "expansion": "Base Set"
+    "weakness": "Fire",
+    "weakness_value": 2,
+    "resistance": "Normal",
+    "resistance_value": 0,
+    "rarity": "Common",
+    "rarity_value": "130/160",
+    "expansion": "Exoskeleton, this pokemon takes 30 less damage from attack"
   }
   ```
 
