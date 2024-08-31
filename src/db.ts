@@ -1,12 +1,10 @@
-import { Pool } from 'pg';
+import dotenv from "dotenv";
+import { Pool } from "pg";
 
+dotenv.config();
 // Set up the PostgreSQL connection pool
 const pool = new Pool({
-    user: 'ignaciodezan',
-    host: 'localhost',
-    database: 'pokemon_api',
-    password: 'fisica03',
-    port: 5432,
+  connectionString: process.env.DATABASE_URL,
 });
 
 export default pool;

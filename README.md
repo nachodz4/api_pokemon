@@ -9,7 +9,7 @@ A RESTful API for managing Pokemon cards, including battle simulations.
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/pokemon-card-api.git
+   git clone https://github.com/nachodz4/api_pokemon.git
    ```
 
 2. **Navigate into the project directory:**
@@ -28,7 +28,7 @@ A RESTful API for managing Pokemon cards, including battle simulations.
 
    ```bash
    PORT=3000
-   DATABASE_URL=your_database_url_here
+   DATABASE_URL=postgresql://<username>:<password>@<url>:<port>/<your_database>
    ```
 
 5. **Run the application:**
